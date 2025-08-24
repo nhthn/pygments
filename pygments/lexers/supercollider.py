@@ -31,60 +31,48 @@ class SuperColliderLexer(RegexLexer):
 
     flags = re.DOTALL | re.MULTILINE
     tokens = {
-        'commentsandwhitespace': [
-            (r'\s+', Text),
-            (r'<!--', Comment),
-            (r'//.*?\n', Comment.Single),
-            (r'/\*.*?\*/', Comment.Multiline)
+        # Multiline comments can nest.
+        'multiline_comment': [
+            (r'[^*/]+', Comment.Multiline),
+            (r'/\*', Comment.Multiline, '#push'),
+            (r'\*/', Comment.Multiline, '#pop'),
+            (r'[*/]', Comment.Multiline)
         ],
-        'slashstartsregex': [
-            include('commentsandwhitespace'),
-            (r'/(\\.|[^[/\\\n]|\[(\\.|[^\]\\\n])*])+/'
-             r'([gim]+\b|\B)', String.Regex, '#pop'),
-            (r'(?=/)', Text, ('#pop', 'badregex')),
-            default('#pop'),
-        ],
-        'badregex': [
-            (r'\n', Text, '#pop')
+        # Double-quote strings can be multiline.
+        'string': [
+            (r'\\[nt]', String.Escape),
+            (r'.*?"', String, '#pop')
         ],
         'root': [
-            (r'^(?=\s|/|<!--)', Text, 'slashstartsregex'),
-            include('commentsandwhitespace'),
-            (r'\+\+|--|~|&&|\?|:|\|\||\\(?=\n)|'
-             r'(<<|>>>?|==?|!=?|[-<>+*%&|^/])=?', Operator, 'slashstartsregex'),
-            (r'[{(\[;,]', Punctuation, 'slashstartsregex'),
-            (r'[})\].]', Punctuation),
-            (words((
-                'for', 'in', 'while', 'do', 'break', 'return', 'continue',
-                'switch', 'case', 'default', 'if', 'else', 'throw', 'try',
-                'catch', 'finally', 'new', 'delete', 'typeof', 'instanceof',
-                'void'), suffix=r'\b'),
-             Keyword, 'slashstartsregex'),
-            (words(('var', 'let', 'with', 'function', 'arg'), suffix=r'\b'),
-             Keyword.Declaration, 'slashstartsregex'),
-            (words((
-                '(abstract', 'boolean', 'byte', 'char', 'class', 'const',
-                'debugger', 'double', 'enum', 'export', 'extends', 'final',
-                'float', 'goto', 'implements', 'import', 'int', 'interface',
-                'long', 'native', 'package', 'private', 'protected', 'public',
-                'short', 'static', 'super', 'synchronized', 'throws',
-                'transient', 'volatile'), suffix=r'\b'),
-             Keyword.Reserved),
-            (words(('true', 'false', 'nil', 'inf'), suffix=r'\b'), Keyword.Constant),
-            (words((
-                'Array', 'Boolean', 'Date', 'Error', 'Function', 'Number',
-                'Object', 'Packages', 'RegExp', 'String',
-                'isFinite', 'isNaN', 'parseFloat', 'parseInt', 'super',
-                'thisFunctionDef', 'thisFunction', 'thisMethod', 'thisProcess',
-                'thisThread', 'this'), suffix=r'\b'),
-             Name.Builtin),
-            (r'[$a-zA-Z_]\w*', Name.Other),
-            (r'\\?[$a-zA-Z_]\w*', String.Symbol),
-            (r'[0-9][0-9]*\.[0-9]+([eE][0-9]+)?[fd]?', Number.Float),
+            (r'(\s+|\t+|\n)+', Text.Whitespace),
+            (r'//.*?\n', Comment.Single),
+            (r'/\*', Comment.Multiline, 'multiline_comment'),
+            (r'"', String, 'string'),
+            # Single-quote symbol.
+            (r"'.*?'", String.Symbol),
+            # Alphanumeric backslash symbol.
+            (r'\\[a-zA-Z0-9]+', String.Symbol),
+            # Empty symbol.
+            (r'\\', String.Symbol),
+            (r'\$.', String.Char),
+            (r'([()\[\]\{\}.;:#=,`\^|]|<-)', Punctuation),
+            (r'[!@%&*\-+=<>?/]+', Operator),
+            # Floats must have a period, exponent suffix, or both. If period is
+            # present there must be digits to either side.
+            (r'\d+\.\d+([eE]-?\d+)?', Number.Float),
+            (r'\d+[eE]-?\d+', Number.Float),
+            (r'\d+', Number.Integer),
+            # TODO: radix, 1s/1b syntax for numeric literals
             (r'0x[0-9a-fA-F]+', Number.Hex),
-            (r'[0-9]+', Number.Integer),
-            (r'"(\\\\|\\[^\\]|[^"\\])*"', String.Double),
-            (r"'(\\\\|\\[^\\]|[^'\\])*'", String.Single),
+            (words([
+                "var", "const", "class", "arg", "classvar", "this",
+                "thisThread", "thisMethod", "thisFunction", "thisFunctionDef",
+                "thisProcess", "true", "false", "inf", "nil", "context"
+            ], suffix=r'\b'), Keyword),
+            # Matches both key binary operators and argument names.
+            (r'[a-z][a-zA-Z0-9_]*:', Name),
+            (r'[a-z][a-zA-Z0-9_]*', Name),
+            (r'[A-Z][a-zA-Z0-9_]*', Name.Class),
         ]
     }
 

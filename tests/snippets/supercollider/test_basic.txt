@@ -1,0 +1,97 @@
+---input---
+SynthDef('test', {
+    |out = 0|
+    var sig = SinOsc.ar(1.1e3) * \amp.kr(1); 
+    Out.ar(out, sig);
+}).add;
+
+/*
+  /* multiline comments nest */
+*/
+
+"strings are multiline\n\t
+"
+
+// character literal
+$+.postln;
+
+
+---tokens---
+'SynthDef'    Name.Class
+'('           Punctuation
+"'test'"      Literal.String.Symbol
+','           Punctuation
+' '           Text.Whitespace
+'{'           Punctuation
+'\n    '      Text.Whitespace
+'|'           Punctuation
+'out'         Name
+' '           Text.Whitespace
+'='           Punctuation
+' '           Text.Whitespace
+'0'           Literal.Number.Integer
+'|'           Punctuation
+'\n    '      Text.Whitespace
+'var'         Keyword
+' '           Text.Whitespace
+'sig'         Name
+' '           Text.Whitespace
+'='           Punctuation
+' '           Text.Whitespace
+'SinOsc'      Name.Class
+'.'           Punctuation
+'ar'          Name
+'('           Punctuation
+'1.1e3'       Literal.Number.Float
+')'           Punctuation
+' '           Text.Whitespace
+'*'           Operator
+' '           Text.Whitespace
+'\\amp'       Literal.String.Symbol
+'.'           Punctuation
+'kr'          Name
+'('           Punctuation
+'1'           Literal.Number.Integer
+')'           Punctuation
+';'           Punctuation
+' \n    '     Text.Whitespace
+'Out'         Name.Class
+'.'           Punctuation
+'ar'          Name
+'('           Punctuation
+'out'         Name
+','           Punctuation
+' '           Text.Whitespace
+'sig'         Name
+')'           Punctuation
+';'           Punctuation
+'\n'          Text.Whitespace
+
+'}'           Punctuation
+')'           Punctuation
+'.'           Punctuation
+'add'         Name
+';'           Punctuation
+'\n\n'        Text.Whitespace
+
+'/*'          Comment.Multiline
+'\n  '        Comment.Multiline
+'/*'          Comment.Multiline
+' multiline comments nest ' Comment.Multiline
+'*/'          Comment.Multiline
+'\n'          Comment.Multiline
+
+'*/'          Comment.Multiline
+'\n\n'        Text.Whitespace
+
+'"'           Literal.String
+'strings are multiline\\n\\t\n"' Literal.String
+'\n\n'        Text.Whitespace
+
+'// character literal\n' Comment.Single
+
+'$+'          Literal.String.Char
+'.'           Punctuation
+'postln'      Name
+';'           Punctuation
+'\n'          Text.Whitespace
